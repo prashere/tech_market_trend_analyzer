@@ -1,4 +1,5 @@
 from dateutil import parser as date_parser
+import pytz
 
 KEYWORDS = [
     # Core AI Terms
@@ -49,6 +50,12 @@ def deduplicate_articles(articles):
 def parse_and_format_date(published_str):
     try:
         date = date_parser.parse(published_str)
+
+        if date.tzinfo is None:
+            date = pytz.utc.localize(date)
+        else:
+            date = date.astimezone(pytz.utc)
         return date.isoformat()
     except Exception:
+        print(f"Error parsing date: {published_str}")
         return None
