@@ -4,6 +4,7 @@ from datetime import datetime
 
 
 from filters import *
+from store_articles_to_db import store_articles_to_db
 
 TECHCRUNCH_RSS = "https://techcrunch.com/feed/"
 DECODER_RSS = 'https://the-decoder.com/feed/'
@@ -40,25 +41,14 @@ def save_articles_json(articles, filename):
 
 
 if __name__ == "__main__":
-    feed = fetch_rss_feed(TECHCRUNCH_RSS)
-    articles = extract_articles(feed)
-    articles = filter_articles_by_keywords(articles)
-    articles = deduplicate_articles(articles)
-    print(
-        f"Filtered and deduplicated {len(articles)} articles from TechCrunch")
-    save_articles_json(articles, 'raw/techcrunch_article.json')
-
-    feed = fetch_rss_feed(DECODER_RSS)
-    articles = extract_articles(feed)
-    articles = filter_articles_by_keywords(articles)
-    articles = deduplicate_articles(articles)
-    print(f"Filtered and deduplicated {len(articles)} articles from Decoder")
-    save_articles_json(articles, 'raw/decoder_article.json')
-
-    feed = fetch_rss_feed(VENTURE_BEAT_RSS)
-    articles = extract_articles(feed)
-    articles = filter_articles_by_keywords(articles)
-    articles = deduplicate_articles(articles)
-    print(
-        f"Filtered and deduplicated {len(articles)} articles from VentureBeat")
-    save_articles_json(articles, 'raw/venturebeat_article.json')
+    for source_name, rss_url in [
+        ("TechCrunch", TECHCRUNCH_RSS),
+        ("Decoder", DECODER_RSS),
+        ("VentureBeat", VENTURE_BEAT_RSS)
+    ]:
+        print(f"Fetching from {source_name}....")
+        feed = fetch_rss_feed(rss_url)
+        articles = extract_articles(feed)
+        articles = filter_articles_by_keywords(articles)
+        articles = deduplicate_articles(articles)
+        store_articles_to_db(articles)
