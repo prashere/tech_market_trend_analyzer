@@ -5,6 +5,7 @@ from datetime import datetime
 
 from filters import *
 from store_articles_to_db import store_articles_to_db
+from scraper import extract_full_text, extract_full_text_custom
 
 TECHCRUNCH_RSS = "https://techcrunch.com/feed/"
 DECODER_RSS = 'https://the-decoder.com/feed/'
@@ -29,7 +30,7 @@ def extract_articles(feed):
             "published": parse_and_format_date(entry.published),
             "summary": entry.summary
         }
-
+        # print('Date:', article["published"])
         articles.append(article)
     return articles
 
@@ -51,4 +52,16 @@ if __name__ == "__main__":
         articles = extract_articles(feed)
         articles = filter_articles_by_keywords(articles)
         articles = deduplicate_articles(articles)
-        store_articles_to_db(articles)
+        enriched_articles = []
+        for article in articles:
+            if source_name == 'VentureBeat':
+                result = extract_full_text_custom(article["link"])
+            else:
+                result = extract_full_text(article["link"])
+            if result and result.get("full_text"):
+                article["full_text"] = result["full_text"]
+                enriched_articles.append(article)
+            else:
+                print(
+                    f"Skipping article due to missing full text: {article['link']}")
+        store_articles_to_db(enriched_articles)
