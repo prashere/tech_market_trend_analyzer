@@ -52,6 +52,9 @@ def load_data():
         articles = extract_articles(feed)
         articles = filter_articles_by_keywords(articles)
         articles = deduplicate_articles(articles)
+
+        articles = articles[:6]
+
         enriched_articles = []
         for article in articles:
             if source_name == 'VentureBeat':
