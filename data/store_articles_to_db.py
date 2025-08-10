@@ -3,6 +3,7 @@ from pathlib import Path
 
 DB_FILE = Path('db/articles.db')
 
+
 def store_articles_to_db(articles):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -13,22 +14,20 @@ def store_articles_to_db(articles):
     for article in articles:
         try:
             cursor.execute("""
-                            INSERT OR IGNORE INTO articles(title,url,source,published_date,summary,full_text)
-                            VALUES(?,?,?,?,?,?)
+                            INSERT OR IGNORE INTO articles(title,url,published_date,summary,full_text)
+                            VALUES(?,?,?,?,?)
                             """, (
-                                article.get('title'),
-                                article.get('url'),
-                                article.get('source'),
-                                article.get('published_date'),
-                                article.get('summary'),
-                                article.get('full_text', '')
-                            ))
+                article.get('title'),
+                article.get('link'),
+                article.get('published'),
+                article.get('summary'),
+                article.get('full_text', '')
+            ))
 
             if cursor.rowcount == 1:
                 inserted_count += 1
             else:
-                
-                
+
                 skipped_count += 1
         except sqlite3.Error as e:
             print(f"Error inserting article {article.get('title')}: {e}")
