@@ -5,4 +5,5 @@ raw/
 .env
 db/articles.db
 articles_cleaned.csv
+faiss
 
