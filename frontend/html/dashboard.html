@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Market Analysis Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="./../css/dashboard.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- Animated background -->
+    <div class="bg-animation" id="bg-animation"></div>
+
+    <header class="header">
+      <div class="header-content">
+        <button class="back-button" onclick="window.location.href='/'">
+          ← Back
+        </button>
+        <h1>Market Analysis Dashboard</h1>
+        <p class="header-subtitle">
+          AI-Powered Tech Market Insights & Trend Analysis
+        </p>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="slider-container" id="cluster-slider">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./../js/dashboard.js"></script>
+  </body>
+</html>
