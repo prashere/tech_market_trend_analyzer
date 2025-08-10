@@ -11,12 +11,12 @@ CREATE TABLE IF NOT EXISTS articles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
     url TEXT UNIQUE,
-    source TEXT,
     published_date TEXT,
     summary TEXT,
     full_text TEXT
 );
 """
+
 
 def setup_database():
     conn = sqlite3.connect(DB_FILE)
@@ -25,4 +25,3 @@ def setup_database():
     conn.commit()
     conn.close()
     print(f"Database setup complete. Articles will be stored in {DB_FILE}")
-
