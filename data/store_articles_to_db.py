@@ -1,11 +1,11 @@
 import sqlite3
 from pathlib import Path
+from db.db_connector import get_connection
 
-DB_FILE = Path('db/articles.db')
 
 
 def store_articles_to_db(articles):
-    conn = sqlite3.connect(DB_FILE)
+    conn = get_connection()
     cursor = conn.cursor()
 
     inserted_count = 0
