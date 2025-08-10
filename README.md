@@ -1,1 +1,1 @@
-# tech_marklet_trend_analyzer
+# tech_market_trend_analyzer
