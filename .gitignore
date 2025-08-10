@@ -4,3 +4,5 @@ __pycache__/
 raw/
 .env
 db/articles.db
+articles_cleaned.csv
+
