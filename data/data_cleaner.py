@@ -22,3 +22,17 @@ def clean_missing_and_duplicates(df):
 
     df_clean = df_clean.reset_index(drop=True)
     return df_clean
+
+
+def clean_article_text(text):
+
+    start_marker = "Want smarter insights in your inbox? Sign up for our weekly newsletters to get only what matters to enterprise AI, data, and security leaders. Subscribe Now"
+    if start_marker in text:
+        text = text.split(start_marker, 1)[1]  
+
+    end_markers = ["Read our Privacy Policy", "Thanks for subscribing", "An error occured"]
+    for marker in end_markers:
+        if marker in text:
+            text = text.split(marker, 1)[0] 
+    
+    return text.strip()
