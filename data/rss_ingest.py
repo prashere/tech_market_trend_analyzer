@@ -3,9 +3,9 @@ import json
 from datetime import datetime
 
 
-from filters import *
-from store_articles_to_db import store_articles_to_db
-from scraper import extract_full_text, extract_full_text_custom
+from .filters import *
+from .store_articles_to_db import store_articles_to_db
+from .scraper import extract_full_text, extract_full_text_custom
 
 TECHCRUNCH_RSS = "https://techcrunch.com/feed/"
 DECODER_RSS = 'https://the-decoder.com/feed/'
@@ -41,7 +41,7 @@ def save_articles_json(articles, filename):
     print(f"Saved {len(articles)} articles to {filename}")
 
 
-if __name__ == "__main__":
+def load_data():
     for source_name, rss_url in [
         ("TechCrunch", TECHCRUNCH_RSS),
         ("Decoder", DECODER_RSS),
