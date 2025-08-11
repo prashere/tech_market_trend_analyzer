@@ -33,6 +33,8 @@ def get_article_clusters(num_clusters=5, index_path=INDEX_PATH, metadata_path=ME
     # Group articles by cluster
     clusters = {}
     for label, article in zip(labels, metadata):
-        clusters.setdefault(label, []).append(article)
+        # Convert numpy int32 to regular Python int for JSON serialization
+        cluster_id = int(label)
+        clusters.setdefault(cluster_id, []).append(article)
 
     return clusters
