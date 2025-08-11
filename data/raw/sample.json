@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "message": "Successfully processed 5 clusters",
+  "total_clusters": 5,
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "article_count": 4,
+      "articles": [
+        {
+          "title": "Article Title",
+          "url": "https://example.com/article",
+          "published_date": "2025-08-10",
+          "summary": "Article summary..."
+        }
+      ],
+      "analysis": {
+        "title": "Cluster Title",
+        "key_developments": [ ],
+        "emerging_trends": [ ],
+        "differences_in_viewpoints": [ ],
+        "strategic_moves": [ ]
+      },
+      "raw_analysis": "Original OpenAI response..."
+    }
+  ],
+  "generated_at": "2025-08-10T12:00:00"
+}
