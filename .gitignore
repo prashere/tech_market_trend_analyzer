@@ -1,9 +1,10 @@
 market_env/
 __pycache__/
 *.pyc
-raw/
 .env
 db/articles.db
-articles_cleaned.csv
+articles_cleaned*
 faiss
+cluster_analysis.json
+
 
