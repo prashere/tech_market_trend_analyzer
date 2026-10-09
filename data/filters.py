@@ -30,7 +30,7 @@ KEYWORDS = [
 def filter_articles_by_keywords(articles, keywords=KEYWORDS):
     filtered = []
     for article in articles:
-        content = (article['title']+article['summary']).lower()
+        content = (article.get("title", "") + article.get("summary", "")).lower()
         if any(keyword.lower() in content for keyword in keywords):
             filtered.append(article)
     return filtered

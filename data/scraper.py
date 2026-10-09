@@ -1,12 +1,18 @@
 from bs4 import BeautifulSoup
 import requests
-from newspaper import Article
+from newspaper import Article, Config
 from datetime import datetime
 
 
 def extract_full_text(url: str):
     try:
-        article = Article(url)
+        config = Config()
+        config.request_timeout = 15
+        config.browser_user_agent = (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+        article = Article(url, config=config)
         article.download()
         article.parse()
         return {

@@ -6,6 +6,9 @@ from pathlib import Path
 import json
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 import asyncio
 import numpy as np
 from typing import Dict, List, Optional
@@ -140,6 +143,8 @@ async def get_clusters():
             "clusters": clusters
         })
 
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error retrieving clusters: {str(e)}")
@@ -164,6 +169,12 @@ async def get_market_analysis():
             result = get_cluster_analysis_for_frontend()
             return JSONResponse(content=result)
 
+    except FileNotFoundError as e:
+        return JSONResponse(content={
+            "success": False,
+            "message": str(e),
+            "clusters": []
+        })
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error generating analysis: {str(e)}")
@@ -264,12 +275,17 @@ async def get_system_info():
             status_code=500, detail=f"Error getting system info: {str(e)}")
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "tech-market-trend-analyzer"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=8000,
+        port=int(os.getenv("PORT", "8000")),
         reload=True,
         log_level="info"
     )

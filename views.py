@@ -80,7 +80,11 @@ def process_all_clusters():
         return []
 
     articles_df = pd.read_csv(latest_csv)
-    clusters = get_article_clusters()
+    try:
+        clusters = get_article_clusters()
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}")
+        return []
 
     processed_clusters = []
 

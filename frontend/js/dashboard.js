@@ -199,7 +199,7 @@ function showEmptyState() {
   container.innerHTML = `
           <div class="empty-state">
             <h3>No Analysis Available</h3>
-            <p>No cluster analysis data is available. Please run the data pipeline first.</p>
+            <p>Run the data pipeline once to fetch RSS articles, embed them, and generate cluster briefings. That step needs <code>OPENAI_API_KEY</code> in <code>.env</code> — see setup.md.</p>
             <button onclick="runPipeline()" style="
               margin-top: 1rem;
               padding: 0.75rem 1.5rem;
@@ -361,11 +361,11 @@ async function loadAnalysisData() {
     // Stop progress animation
     stopProgressAnimation();
 
-    if (data.success) {
+    if (data.success && data.clusters && data.clusters.length > 0) {
       currentAnalysisData = data;
       renderClusters(data);
     } else {
-      showError(data.message || "Failed to load analysis data");
+      showEmptyState();
     }
   } catch (error) {
     console.error("Error loading analysis:", error);

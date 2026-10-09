@@ -22,16 +22,19 @@ def fetch_rss_feed(url):
 
 
 def extract_articles(feed):
+    if not feed:
+        return []
     articles = []
-    for entry in feed.entries:
+    for entry in getattr(feed, "entries", []) or []:
+        published = getattr(entry, "published", None) or getattr(entry, "updated", None)
         article = {
-            "title": entry.title,
-            "link": entry.link,
-            "published": parse_and_format_date(entry.published),
-            "summary": entry.summary
+            "title": getattr(entry, "title", "") or "",
+            "link": getattr(entry, "link", "") or "",
+            "published": parse_and_format_date(published) if published else None,
+            "summary": getattr(entry, "summary", "") or "",
         }
-        # print('Date:', article["published"])
-        articles.append(article)
+        if article["link"]:
+            articles.append(article)
     return articles
 
 
@@ -49,6 +52,9 @@ def load_data():
     ]:
         print(f"Fetching from {source_name}....")
         feed = fetch_rss_feed(rss_url)
+        if not feed:
+            print(f"Skipping {source_name}: feed unavailable")
+            continue
         articles = extract_articles(feed)
         articles = filter_articles_by_keywords(articles)
         articles = deduplicate_articles(articles)

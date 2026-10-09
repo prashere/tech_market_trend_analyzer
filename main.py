@@ -175,9 +175,12 @@ def update_data_pipeline():
 
 
 def start_scheduler():
-    print("Setting up automatic updates every 24 hours...")
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+    hours = int(os.getenv("RSS_UPDATE_INTERVAL", "24"))
+    print(f"Setting up automatic updates every {hours} hours...")
 
-    schedule.every(24).hours.do(update_data_pipeline)
+    schedule.every(hours).hours.do(update_data_pipeline)
 
     def run_scheduler():
         while True:
@@ -187,7 +190,7 @@ def start_scheduler():
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
 
-    next_run = datetime.now() + timedelta(hours=24)
+    next_run = datetime.now() + timedelta(hours=hours)
     print(
         f"Automatic updates started. Next update: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
 

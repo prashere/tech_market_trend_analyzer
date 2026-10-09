@@ -1,139 +1,164 @@
 # Tech Market Trend Analyzer
 
-A comprehensive AI-powered market analysis system that automatically collects, processes, and analyzes technology and market trends from RSS feeds. The system uses advanced clustering algorithms and OpenAI's API to generate professional market insights with a modern web interface.
+A small research tool that turns recent tech and AI news into grouped market insights.
 
-## Features
+It reads public RSS feeds, keeps unique articles, embeds the text, clusters related stories, and asks a language model to describe each cluster: what is happening, which views differ, and which moves look strategic.
 
-- **Automated Data Collection**: RSS feed ingestion from major tech news sources
-- **AI-Powered Analysis**: OpenAI GPT integration for generating market insights
-- **Advanced Clustering**: FAISS vector similarity search with K-means clustering
-- **Real-time Dashboard**: Modern web interface with live data updates
-- **RESTful API**: Complete FastAPI backend with comprehensive endpoints
-- **Data Persistence**: SQLite database with duplicate prevention
-- **Scheduled Updates**: Automated 24-hour data refresh cycles
-- **Professional UI**: Clean, responsive design with progress tracking
+The end result is a dashboard you can open in a browser — not a spreadsheet of headlines.
 
-## Technology Stack
+---
 
-### Backend
+## Who it is for
 
-- **Python 3.10+**: Core application language
-- **FastAPI**: Modern web framework for API development
-- **SQLite**: Lightweight database for article storage
-- **FAISS**: Facebook AI Similarity Search for vector operations
-- **OpenAI API**: Large language model integration
-- **scikit-learn**: Machine learning algorithms for clustering
-- **pandas**: Data manipulation and analysis
-- **BeautifulSoup**: HTML parsing for content extraction
-- **feedparser**: RSS feed processing
+- Analysts and students who want a structured view of this week’s AI and tech news
+- Founders and PMs who need a quick briefing before a market conversation
+- Anyone who currently skims several feeds and then writes the summary by hand
 
-### Frontend
-
-- **HTML5/CSS3**: Modern web standards
-- **JavaScript (ES6+)**: Interactive functionality
-- **Responsive Design**: Mobile-first approach
-- **CSS Grid/Flexbox**: Advanced layout systems
-
-### Data Sources
-
-- TechCrunch RSS feeds
-- The Decoder technology news
-- VentureBeat market coverage
-
-## Installation
-
-### Prerequisites
-
-- Python 3.10 or higher
-- OpenAI API key
-- Internet connection for RSS feeds
-
-### Setup Instructions
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd tech_market_trend_analyzer
-   ```
-
-2. **Create and activate virtual environment**
-
-   ```bash
-   python -m venv market_env
-   # Windows
-   market_env\Scripts\activate
-   # macOS/Linux
-   source market_env/bin/activate
-   ```
-
-3. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Environment Configuration**
-
-   ```bash
-   cp .env.template .env
-   ```
-
-   Edit `.env` file and add your OpenAI API key:
-
-   ```
-   OPENAI_API_KEY=your_openai_api_key_here
-   ```
-
-5. **Initialize the system**
-   ```bash
-   python app.py
-   ```
-
-### API Endpoints
-
-#### System Information
-
-- `GET /` - Homepage
-- `GET /dashboard` - Analysis dashboard
-- `GET /api/system/info` - System status
-
-#### Data Pipeline
-
-- `GET /api/pipeline/status` - Pipeline status
-- `POST /api/pipeline/run` - Start data collection
-
-#### Analysis
-
-- `GET /api/analysis` - Complete market analysis
-- `POST /api/analysis/refresh` - Force refresh analysis
-- `GET /api/clusters` - Raw cluster data
-- `GET /api/clusters/{id}` - Specific cluster details
+---
 
 
 
-## Data Flow
+## What it does
 
-1. **Collection**: RSS feeds are automatically parsed and stored
-2. **Processing**: Articles are cleaned and deduplicated
-3. **Embedding**: OpenAI creates vector embeddings for content
-4. **Storage**: FAISS indexes embeddings for similarity search
-5. **Clustering**: K-means groups similar articles together
-6. **Analysis**: AI generates insights for each cluster
-7. **Presentation**: Web dashboard displays formatted results
 
-## Configuration
+| Step        | What you get                                                                 |
+| ----------- | ---------------------------------------------------------------------------- |
+| **Collect** | Articles from TechCrunch, The Decoder, and VentureBeat’s AI feed             |
+| **Filter**  | Keeps items that look like AI, startups, or platform news; drops duplicates  |
+| **Store**   | SQLite, one row per URL                                                      |
+| **Embed**   | OpenAI embeddings of the article body                                        |
+| **Cluster** | K-means over FAISS vectors so related stories sit together                   |
+| **Analyze** | A JSON briefing per cluster (title, developments, trends, viewpoints, moves) |
+| **Show**    | A homepage plus a dashboard that pages through those briefings               |
 
-### Environment Variables
 
-- `OPENAI_API_KEY`: Required for AI analysis
-- `RSS_UPDATE_INTERVAL`: Hours between updates (default: 24)
-- `CLUSTER_COUNT`: Number of article clusters (default: 5)
+The homepage is the landing screen. **View Market Analysis** opens the dashboard. The first run has to fetch and analyze articles before the dashboard has anything to show.
 
-### Customization Options
+---
 
-- **RSS Sources**: Modify `data/rss_ingest.py` to add feeds
-- **Analysis Prompts**: Edit `agent/build_prompt.py` for custom insights
-- **UI Styling**: Update `frontend/css/` for visual changes
-- **Clustering Parameters**: Adjust in `agent/clusters.py`
+
+
+## How a typical run works
+
+```text
+Start the web app
+    → Open the dashboard
+        → Start (or wait for) the data pipeline
+            → RSS fetch → clean → embed → cluster → LLM briefing
+                → Dashboard shows one card per topic cluster
+```
+
+You can also run the pipeline from the command line (`python main.py`). That version keeps a 24-hour refresh loop until you stop it.
+
+---
+
+
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Sources
+    RSS["RSS feeds\nTechCrunch · Decoder · VentureBeat"]
+  end
+
+  subgraph App
+    Web["FastAPI + static UI"]
+    Pipe["Data pipeline"]
+    Cluster["K-means + FAISS"]
+    LLM["OpenAI chat"]
+  end
+
+  subgraph Store
+    SQLite[("SQLite\narticles.db")]
+    Index["FAISS index + metadata"]
+    Cache["cluster_analysis.json"]
+  end
+
+  RSS --> Pipe
+  Pipe --> SQLite
+  Pipe --> Index
+  Web --> Pipe
+  Cluster --> Index
+  Cluster --> LLM
+  LLM --> Cache
+  Web --> Cache
+  Web --> Cluster
+```
+
+
+
+```text
+Browser  →  FastAPI (PORT, default 8001 in this checkout)
+                →  SQLite (db/articles.db)
+                →  FAISS (faiss/)
+                →  OpenAI (embeddings + cluster write-up)
+```
+
+**Request path.** The browser loads HTML from FastAPI. The dashboard calls `/api/analysis`. If a cached briefing exists it is returned immediately; otherwise clusters are built and sent to the chat model.
+
+**Pipeline path.** `/api/pipeline/run` (or `python main.py`) fetches RSS, stores new URLs, embeds full text, and writes the FAISS index.
+
+---
+
+
+
+## Technology
+
+
+| Layer   | Choice                                    |
+| ------- | ----------------------------------------- |
+| Website | HTML, CSS, vanilla JavaScript             |
+| API     | Python 3.10+, FastAPI, Uvicorn            |
+| Store   | SQLite                                    |
+| Vectors | FAISS (`faiss-cpu`), scikit-learn K-means |
+| LLM     | OpenAI embeddings + chat                  |
+| Ingest  | feedparser, newspaper3k, BeautifulSoup    |
+
+
+---
+
+
+
+## Project layout
+
+```text
+tech_market_trend_analyzer/
+├── app.py                 Web API and static pages
+├── main.py                CLI pipeline + 24-hour scheduler
+├── views.py               Cluster → LLM briefing for the dashboard
+├── data/                  RSS fetch, scrape, clean, SQLite writes
+├── db/                    Connection helpers
+├── vector_store/          OpenAI embeddings
+├── agent/                 Clustering and analysis prompt
+├── frontend/              Homepage and dashboard
+├── setup.md               Step-by-step local setup
+└── .env.template          Keys and tunables
+```
+
+---
+
+
+
+## Getting started
+
+Install, API key, first run, and a working checklist are in **[setup.md](setup.md)**.
+
+The short version:
+
+```bash
+cd tech_market_trend_analyzer
+python3.12 -m venv market_env   # python3 -m venv if that is already 3.10+
+source market_env/bin/activate   # Windows: market_env\Scripts\activate
+
+pip install -r requirements.txt
+cp .env.template .env
+# Add OPENAI_API_KEY. Keep PORT=8001 if Career Intelligence is already on 8000.
+
+python app.py
+```
+
+Then open [http://localhost:8001](http://localhost:8001) (or the port you set). The site loads without a key. Fetching articles, embeddings, and cluster write-ups need `OPENAI_API_KEY`.[p](https://github.com/prashere/tech_market_trend_analyzer)
+
+---
 

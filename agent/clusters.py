@@ -1,21 +1,30 @@
+import os
 import numpy as np
 import pickle
 from sklearn.cluster import KMeans
 import faiss
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 INDEX_PATH = "faiss/articles_faiss.index"
 METADATA_PATH = "faiss/articles_metadata.pkl"
 
 
-def get_article_clusters(num_clusters=5, index_path=INDEX_PATH, metadata_path=METADATA_PATH):
-    # Load FAISS index
+def get_article_clusters(num_clusters=None, index_path=INDEX_PATH, metadata_path=METADATA_PATH):
+    if num_clusters is None:
+        num_clusters = int(os.getenv("CLUSTER_COUNT", "5"))
+
+    if not os.path.exists(index_path) or not os.path.exists(metadata_path):
+        raise FileNotFoundError(
+            "No FAISS index yet. Run the data pipeline first (see setup.md)."
+        )
+
     index = faiss.read_index(index_path)
 
-    # Load metadata
-    with open(metadata_path, 'rb') as f:
+    with open(metadata_path, "rb") as f:
         metadata = pickle.load(f)
 
-    # Extract embeddings from FAISS index
     embeddings = []
     for i in range(index.ntotal):
         vec = index.reconstruct(i)
@@ -23,10 +32,17 @@ def get_article_clusters(num_clusters=5, index_path=INDEX_PATH, metadata_path=ME
     embeddings = np.array(embeddings)
 
     print(
-        f"Loaded {len(embeddings)} embeddings and {len(metadata)} metadata entries.")
+        f"Loaded {len(embeddings)} embeddings and {len(metadata)} metadata entries."
+    )
 
-    # Perform K-means clustering
-    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    if len(embeddings) == 0:
+        return {}
+
+    k = max(1, min(num_clusters, len(embeddings)))
+    if k == 1:
+        return {0: metadata}
+
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
     kmeans.fit(embeddings)
     labels = kmeans.labels_
 
